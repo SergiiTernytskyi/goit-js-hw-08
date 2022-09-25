@@ -12,31 +12,23 @@ function onFormType(event) {
   const { name, value } = event.target;
 
   try {
-    let savedFeedback = localStorage.getItem(LOCALE_STORAGE_KEY);
-    if (savedFeedback) {
-      savedFeedback = JSON.parse(savedFeedback);
-    } else {
-      savedFeedback = {};
-    }
+    let savedFeedback = load(LOCALE_STORAGE_KEY);
+    savedFeedback = savedFeedback ? savedFeedback : {};
 
     savedFeedback[name] = value;
-
-    localStorage.setItem(LOCALE_STORAGE_KEY, JSON.stringify(savedFeedback));
+    save(LOCALE_STORAGE_KEY, savedFeedback);
   } catch (error) {
     console.error('Set state error: ', error.message);
   }
 }
 
 function pageLoad() {
-  const savedFeedback = localStorage.getItem(LOCALE_STORAGE_KEY);
+  const savedFeedback = load(LOCALE_STORAGE_KEY);
+  console.log(savedFeedback);
   if (savedFeedback) {
-    try {
-      Object.entries(JSON.parse(savedFeedback)).forEach(([key, value]) => {
-        formRef.elements[key].value = value;
-      });
-    } catch (error) {
-      console.error('Get state error: ', error.message);
-    }
+    Object.entries(savedFeedback).forEach(([key, value]) => {
+      formRef.elements[key].value = value;
+    });
   }
 }
 
@@ -50,6 +42,32 @@ function submitHandler(event) {
   const formData = { email: email.value, message: message.value };
   console.log(formData);
 
-  event.target.reset();
-  localStorage.removeItem(LOCALE_STORAGE_KEY);
+  event.currentTarget.reset();
+  remove(LOCALE_STORAGE_KEY);
+}
+
+function save(key, value) {
+  try {
+    const serializedState = JSON.stringify(value);
+    localStorage.setItem(key, serializedState);
+  } catch (error) {
+    console.error('Set state error: ', error.message);
+  }
+}
+
+function load(key) {
+  try {
+    const serializedState = localStorage.getItem(key);
+    return serializedState === null ? undefined : JSON.parse(serializedState);
+  } catch (error) {
+    console.error('Get state error: ', error.message);
+  }
+}
+
+function remove(key) {
+  try {
+    localStorage.removeItem(key);
+  } catch (error) {
+    console.error('Get state error: ', error.message);
+  }
 }
