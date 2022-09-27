@@ -1,4 +1,6 @@
 import throttle from 'lodash.throttle';
+import { Notify } from 'notiflix/build/notiflix-notify-aio';
+import { Block } from 'notiflix/build/notiflix-block-aio';
 import { save, load, remove } from './local-storage';
 
 const LOCALE_STORAGE_KEY = 'feedback-form-state';
@@ -25,7 +27,7 @@ function onFormType(event) {
 
 function pageLoad() {
   const savedFeedback = load(LOCALE_STORAGE_KEY);
-  console.log(savedFeedback);
+  // console.log(savedFeedback);
   if (savedFeedback) {
     Object.entries(savedFeedback).forEach(([key, value]) => {
       formRef.elements[key].value = value;
@@ -40,9 +42,26 @@ function submitHandler(event) {
     elements: { email, message },
   } = event.currentTarget;
 
-  const formData = { email: email.value, message: message.value };
-  console.log(formData);
+  if (email.value === '' || message.value === '') {
+    // alert(
+    //   'All fields of the form must be filled. Please enter email and comment!'
+    // );
+    Notify.failure(
+      'All fields of the form must be filled. Please enter email and comment!',
+      {
+        width: '360px',
+        position: 'center-center',
+        backOverlay: true,
+        clickToClose: true,
+        fontSize: '16px',
+        timeout: 7000,
+      }
+    );
+  } else {
+    const formData = { email: email.value, message: message.value };
+    console.log(formData);
 
-  event.currentTarget.reset();
-  remove(LOCALE_STORAGE_KEY);
+    event.currentTarget.reset();
+    remove(LOCALE_STORAGE_KEY);
+  }
 }
