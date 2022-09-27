@@ -4,6 +4,9 @@ import throttle from 'lodash.throttle';
 const iframeRef = document.querySelector('iframe');
 const player = new Player(iframeRef);
 
+const LOCAL_STORAGE_KEY = 'videoplayer-current-time';
+let seconds = 0;
+
 player.getVideoTitle().then(function (title) {
   console.log('title:', title);
 });
@@ -15,8 +18,17 @@ player.on(
     console.log('Percentage', data.percent);
 
     console.log();
-    localStorage.setItem('videoplayer-current-time', data.seconds);
+    localStorage.setItem(LOCAL_STORAGE_KEY, data.seconds);
   }, 1000)
 );
 
-player.setCurrentTime(localStorage.getItem('videoplayer-current-time'));
+const setVideoTime = key => {
+  try {
+    const savedTime = localStorage.getItem(key);
+    return savedTime === null ? seconds : savedTime;
+  } catch (error) {
+    console.error('Get state error: ', error.message);
+  }
+};
+
+player.setCurrentTime(setVideoTime(LOCAL_STORAGE_KEY));
